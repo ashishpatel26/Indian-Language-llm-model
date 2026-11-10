@@ -1,0 +1,7 @@
+.venv/
+raw/
+clean/
+data/
+ckpt*/
+tokenizer/
+__pycache__/
