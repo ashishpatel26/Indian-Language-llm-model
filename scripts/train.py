@@ -87,7 +87,9 @@ if os.path.exists(state_path):
     print("resumed at step", step)
 
 def save():
-    torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step}, state_path)
+    # write to temp then atomic rename: a kill mid-save never corrupts the last good checkpoint
+    torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step}, state_path + ".tmp")
+    os.replace(state_path + ".tmp", state_path)
     model.save_pretrained(f"{OUT}/hf")
     print(f"saved {OUT}/ at step {step}")
 
@@ -116,4 +118,5 @@ try:
             print(f"== step {step} val loss {vl:.3f} ppl {math.exp(vl):.1f}\n   sample: {sample()}", flush=True)
             save()
 except KeyboardInterrupt:
+    print("\nCtrl+C: saving checkpoint, do NOT press again...")
     save()
