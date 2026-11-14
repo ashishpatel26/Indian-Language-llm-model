@@ -1,5 +1,5 @@
 """Pretrain a Llama-style model from scratch on data/train.bin.
-env: SIZE=small|main  MAX_STEPS=12000  MICRO_BS / GRAD_ACC to override  OUT=ckpt
+env: SIZE=small|main  MAX_STEPS=12000  MICRO_BS / GRAD_ACC to override  OUT=ckpt  DATA=data
 usage: uv run python scripts/train.py
 """
 import math, os, time
@@ -38,8 +38,9 @@ if os.environ.get("CKPT", "1") == "1":
 model.config.use_cache = False
 print(f"params {model.num_parameters()/1e6:.1f}M | tokens/step {MICRO_BS*GRAD_ACC*CTX:,}")
 
-train = np.memmap("data/train.bin", dtype=np.uint16, mode="r")
-val = np.memmap("data/val.bin", dtype=np.uint16, mode="r")
+DATA = os.environ.get("DATA", "data")
+train = np.memmap(f"{DATA}/train.bin", dtype=np.uint16, mode="r")
+val = np.memmap(f"{DATA}/val.bin", dtype=np.uint16, mode="r")
 print(f"train {len(train)/1e6:.1f}M tok | val {len(val)/1e6:.1f}M tok | "
       f"epochs at end ~{MAX_STEPS*MICRO_BS*GRAD_ACC*CTX/len(train):.2f}")
 

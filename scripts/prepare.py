@@ -1,5 +1,5 @@
 """Tokenize + pack into flat uint16 streams. Every VAL_EVERY-th line -> val.
-usage: python scripts/prepare.py clean/hi.txt hi        (appends to data/train.bin, data/val.bin)
+usage: python scripts/prepare.py clean/hi.txt hi [outdir]   (appends to <outdir>/train.bin, val.bin; default data)
 """
 import os, sys
 import numpy as np
@@ -7,13 +7,14 @@ import sentencepiece as spm
 from tqdm import tqdm
 
 src, lang = sys.argv[1], sys.argv[2]
+OUT = sys.argv[3] if len(sys.argv) > 3 else "data"
 VAL_EVERY = 200
 sp = spm.SentencePieceProcessor(model_file="tokenizer/spm.model")
 assert sp.get_piece_size() <= 65535, "vocab too big for uint16"
 tag, eos = [sp.piece_to_id(f"<{lang}>")], sp.eos_id()
-os.makedirs("data", exist_ok=True)
+os.makedirs(OUT, exist_ok=True)
 
-outs = {k: open(f"data/{k}.bin", "ab") for k in ("train", "val")}
+outs = {k: open(f"{OUT}/{k}.bin", "ab") for k in ("train", "val")}
 bufs = {"train": [], "val": []}
 counts = {"train": 0, "val": 0}
 
